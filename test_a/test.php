@@ -1,5 +1,5 @@
 <?php
-
+    // exit(1);
 // メッセージを保存するファイルのパス設定
 define( 'FILENAME', './message.txt');
 
@@ -8,98 +8,71 @@ date_default_timezone_set('Asia/Tokyo');
 
 // 変数の初期化
 $now_date = null;
+$data = null;
+$file_handle = null;
+$split_data = null;
 $message = array();
 $message_array = array();
 $success_message = null;
 $error_message = array();
 $clean = array();
 
-session_start();
-
-try {
-    $pdo = new PDO('mysql:charset=UTF8;dbname=board;host=localhost', 'root', 'katsu2002682168');
-
-} catch(PDOException $e) {
-
-    // 接続エラーのときエラー内容を取得する
-    $error_message[] = $e->getMessage();
-}
-
-// ここにログインページを作りたい
 
 if( !empty($_POST['btn_submit']) ) {
-	
-	// エラーチェック（表示名）
+
+	// 表示名の入力チェック
 	if( empty($_POST['view_name']) ) {
 		$error_message[] = '表示名を入力してください。';
-	} 
-    if( 100 < mb_strlen($_POST['message'], 'UTF-8') ) {
-        $error_message[] = 'ひと言メッセージは100文字以内で入力してください。';
+	}else{
+        $clean['view_name'] = htmlspecialchars($_POST['view_name'],ENT_QUOTES);
+        $clean['view_name'] = preg_replace('/\\r\\n|\\n|\\r/','',$clean['view_name']);
     }
-	$clean['view_name'] = htmlspecialchars( $_POST['view_name'], ENT_QUOTES);
-   
-   
-   if($_SESSION['view_name'] = $_POST['view_name']);
-   
+	
 	// メッセージの入力チェック
 	if( empty($_POST['message']) ) {
 		$error_message[] = 'ひと言メッセージを入力してください。';
-	} else {
-		$clean['message'] = htmlspecialchars( $_POST['message'], ENT_QUOTES);
-	}
+	}else{
+        $clean['message'] = htmlspecialchars($_POST['message'],ENT_QUOTES);
+        $clean['message'] = preg_replace('/\\r\\n|\\n|\\n/','<br>',$clean['message']);
+    }
 
 	if( empty($error_message) ) {
 
-		// データベースに接続
-		$mysqli = new mysqli( 'localhost', 'root', 'katsu2002682168', 'test');
-		
-		// 接続エラーの確認
-		if( $mysqli->connect_errno ) {
-			$error_message[] = '書き込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
-		} else {
-
-			// 文字コード設定
-			$mysqli->set_charset('utf8');
-			
-			// 書き込み日時を取得
+		if( $file_handle = fopen( FILENAME, "a") ) {
+	
+		    // 書き込み日時を取得
 			$now_date = date("Y-m-d H:i:s");
-			
-			// データを登録するSQL作成
-			$sql = "INSERT INTO bbs (name, message, date, ip) VALUES ( '$clean[view_name]', '$clean[message]', '$now_date','$_SERVER[REMOTE_ADDR]')";
-            print $sql;
-            print  $_SERVER["REMOTE_ADDR"] ;
-			
-			// データを登録
-			$res = $mysqli->query($sql);
 		
-			if( $res ) {
-				$success_message = 'メッセージを書き込みました。';
-			} else {
-				$error_message[] = '書き込みに失敗しました。';
-			}
+			// 書き込むデータを作成
+			$data = "'".$clean['view_name']."','".$clean['message']."','".$now_date."'\n";
 		
-			// データベースの接続を閉じる
-			$mysqli->close();
+			// 書き込み
+			fwrite( $file_handle, $data);
+		
+			// ファイルを閉じる
+			fclose( $file_handle);
+	
+			$success_message = 'メッセージを書き込みました。';
 		}
 	}
 }
 
-// データベースに接続
-$mysqli = new mysqli( 'localhost', 'root', 'katsu2002682168', 'test');
 
-// 接続エラーの確認
-if( $mysqli->connect_errno ) {
-	$error_message[] = 'データの読み込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
-} else {
+if( $file_handle = fopen( FILENAME,'r') ) {
+    while( $data = fgets($file_handle) ){
 
-	$sql = "SELECT * FROM bbs ORDER BY id DESC";
-	$res = $mysqli->query($sql);
+		$split_data = preg_split( '/\'/', $data);
 
-    if( $res ) {
-		$message_array = $res->fetch_all(MYSQLI_ASSOC);
-    }
-
-    $mysqli->close();
+		$message = array(
+			'view_name' => $split_data[1],
+			'message' => $split_data[3],
+			'post_date' => $split_data[5]
+		);
+		array_unshift( $message_array, $message);
+	}
+    
+    // ファイルを閉じる
+    fclose( $file_handle);
 }
 
 ?>
@@ -358,13 +331,7 @@ article.reply::before {
 		color: #999;
 		line-height: 1.6em;
 		font-size: 72%;
-    }
-    .info h4 {
-        color: #988;
-        line-height: 1.6em;
-        text-align: right;
-        font-size: 72%;
-    }
+	}
     article p {
         color: #555;
         font-size: 86%;
@@ -403,11 +370,11 @@ article.reply::before {
 <form method="post">
 	<div>
 		<label for="view_name">表示名</label>
-		<input id="view_name" type="text" name="view_name" value="<?php if( !empty($_SESSION['view_name']) ){ echo htmlspecialchars( $_SESSION['view_name'], ENT_QUOTES, 'UTF-8'); } ?>">
+		<input id="view_name" type="text" name="view_name" value="">
 	</div>
 	<div>
 		<label for="message">ひと言メッセージ</label>
-		<textarea id="message" name="message"><?php if( !empty($value['message']) ){ echo htmlspecialchars( $value['message'], ENT_QUOTES, 'UTF-8'); } ?></textarea>
+		<textarea id="message" name="message"></textarea>
 	</div>
 	<input type="submit" name="btn_submit" value="書き込む">
 </form>
@@ -417,35 +384,10 @@ article.reply::before {
 <?php foreach( $message_array as $value ){ ?>
 <article>
     <div class="info">
-        <h2><?php echo $value['name']; ?></h2>
-        <time><?php echo date('Y年m月d日 H:i', strtotime($value['date'])); ?></time>   
+        <h2><?php echo $value['view_name']; ?></h2>
+        <time><?php echo date('Y年m月d日 H:i', strtotime($value['post_date'])); ?></time>
     </div>
-    
-    <p><?php 
-  
- // $value;  //対象のテキスト
-    $pattern = '/((?:https?|ftp):\/\/[-_.!~*\'()a-zA-Z0-9;\/?:@&=+$,%#]+)/';
-    $replace = '<a href="$1">$1</a>';
-    $value  = preg_replace( $pattern, $replace, $value);
-  
-    echo nl2br($value['message']); 
-    
-//文字数のカウント
-    $value  = str_replace(array("\r\n","\n","\r"),'',$value);
-    $message_count =  mb_strlen($value['message'],'UTF-8');
-		// 文字数を確認
-		// if( 10 < mb_strlen($value['message'], 'UTF-8') ) {
-		// 	$error_message[] = 'ひと言メッセージは100文字以内で入力してください。';
-		// }
-        // print $error_message[0];
-    ?></p>
-    <div class="info">  
-    <h4>文字数<?php print $message_count?>
-    
-</h4>
-
-    
-    </div>
+    <p><?php echo $value['message']; ?></p>
 </article>
 <?php } ?>
 <?php } ?>

@@ -1,10 +1,39 @@
-# 一旦すべてを除外する
-*
+# # # # 一旦すべてを除外する
+# # # *
 
-# 必要なファイルだけを管理対象とする
-## このファイル自体
-!.gitignore
+# # # # 必要なファイルだけを管理対象とする
+# # # ## このファイル自体
+# # # !.gitignore
 
-!README.md
+# # # !README.md
 
-!*.php
+# # # !*.php
+
+# # # 一旦すべてを除外する
+# *
+
+# # 必要なファイルだけを管理対象とする
+# ## このファイル自体
+# !.gitignore
+
+# ## 復元の手順などをメモしたリードミー
+# !README.md
+
+# # ## PHP設定ファイル
+# !php/
+# !php/php.ini
+
+# # ## Apache設定ファイル
+# !apache/
+# !apache/conf/
+# !apache/conf/httpd.conf
+# !apache/conf/extra/
+# !apache/conf/extra/httpd-ssl.conf
+# !apache/conf/extra/httpd-vhosts.conf
+
+# ## 自作のSSLサーバ証明書 (オレオレ証明書)
+# !apache/conf/ssl.crt/
+# !apache/conf/ssl.crt/my-server.crt
+# !apache/conf/ssl.key/
+# !apache/conf/ssl.key/my-server.key
+

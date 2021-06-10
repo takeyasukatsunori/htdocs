@@ -25,6 +25,8 @@ try {
     $error_message[] = $e->getMessage();
 }
 
+// ここにログインページを作りたい
+
 if( !empty($_POST['btn_submit']) ) {
 	
 	// エラーチェック（表示名）

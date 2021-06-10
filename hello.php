@@ -31,7 +31,7 @@ if( !empty($_POST['btn_submit']) ) {
 	if( empty($_POST['view_name']) ) {
 		$error_message[] = '表示名を入力してください。';
 	} 
-    if( 100 < mb_strlen($_POST['message'], 'UTF-8') ) {
+    if( 1000 < mb_strlen($_POST['message'], 'UTF-8') ) {
         $error_message[] = 'ひと言メッセージは100文字以内で入力してください。';
     }
 	$clean['view_name'] = htmlspecialchars( $_POST['view_name'], ENT_QUOTES);

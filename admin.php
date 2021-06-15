@@ -1,7 +1,7 @@
 <?php
 
 // メッセージを保存するファイルのパス設定
-define( 'FILENAME', './message.txt');
+define( 'password', 'katsunori');
 
 // タイムゾーン設定
 date_default_timezone_set('Asia/Tokyo');
@@ -28,6 +28,11 @@ try {
 // ここにログインページを作りたい
 
 if( !empty($_POST['btn_submit']) ) {
+    if( !empty($_POST['admin_password']) && $_POST['admin_password'] === password ) {
+		$_SESSION['admin_login'] = true;
+	} else {
+		$error_message[] = 'ログインに失敗しました。';
+	}
 	
 	if( empty($error_message) ) {
 
@@ -231,6 +236,7 @@ label {
 }
 
 input[type="text"],
+input[type="password"],
 textarea {
 	margin-bottom: 20px;
 	padding: 10px;
@@ -240,7 +246,9 @@ textarea {
     background: #fff;
 }
 
-input[type="text"] {
+input[type="text"] ,
+input[type="password"]
+{
 	width: 200px;
 }
 textarea {
@@ -378,6 +386,9 @@ article.reply::before {
 <?php endif; ?>
 
 <section>
+
+<?php if( !empty($_SESSION['admin_login']) && $_SESSION['admin_login'] === true ): ?>
+
 <?php if( !empty($message_array) ){ ?>
 <?php foreach( $message_array as $value ){ ?>
 <article>
@@ -403,6 +414,7 @@ article.reply::before {
 		// 	$error_message[] = 'ひと言メッセージは100文字以内で入力してください。';
 		// }
         // print $error_message[0];
+        
     ?></p>
     <div class="info">  
     <h4>文字数<?php print $message_count?>
@@ -411,6 +423,16 @@ article.reply::before {
 </article>
 <?php } ?>
 <?php } ?>
+<?php else: ?>
+<!-- ログインフォーム -->
+<form method="post">
+    <div>
+        <label for="admin_password">ログインパスワード</label>
+        <input id="admin_password" type="password" name="admin_password" value="">
+    </div>
+    <input type="submit" name="btn_submit" value="ログイン">
+</form>
+    <?php endif; ?>
 </section>
 </body>
 </html>
